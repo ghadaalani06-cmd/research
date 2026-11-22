@@ -1,156 +1,503 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas AI Research Agent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Atlas | AI Research Platform</title>
 <style>
+:root {
+  --bg:#f4f6fb;
+  --panel:#fff;
+  --text:#192238;
+  --muted:#778198;
+  --primary:#6557e8;
+  --border:#e6e9f1;
+}
 *{box-sizing:border-box}
-body{margin:0;background:#0b1220;color:#eaf1ff;font-family:Arial,sans-serif}
-main{max-width:850px;margin:65px auto;padding:25px}
-h1{font-size:42px;margin-bottom:10px}
-p{color:#9eacc2;line-height:1.6}
-.panel{background:#142238;border:1px solid #293c57;border-radius:16px;padding:22px;margin-top:25px}
-textarea{width:100%;height:130px;background:#091525;color:white;border:1px solid #405572;border-radius:10px;padding:14px;font-size:16px}
-select{background:#091525;color:white;padding:12px;border:1px solid #405572;border-radius:9px}
-button{background:#82b8ff;color:#071426;border:0;padding:14px 22px;border-radius:9px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5}
-.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:15px}
-#output{white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere}
-a{color:#8ebeff}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:245px;
+  background:#151d32;
+  color:white;
+  padding:25px 16px;
+  flex-shrink:0;
+}
+.logo{font-size:23px;font-weight:bold;margin-bottom:35px}
+.logo span{color:#a99fff}
+.nav button{
+  display:block;width:100%;
+  padding:13px;margin:5px 0;
+  background:transparent;color:#c9d0e0;
+  border:0;border-radius:9px;text-align:left;
+}
+.nav button:hover,.nav button.active{
+  background:#303b59;color:white;
+}
+main{flex:1;padding:28px;min-width:0}
+header{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:12px;margin-bottom:25px;
+}
+h1{font-size:27px;margin:0 0 8px}
+h2{font-size:20px}
+h3{font-size:16px}
+p,.muted{color:var(--muted)}
+.btn{
+  padding:10px 15px;border:1px solid var(--border);
+  border-radius:9px;background:white;color:var(--text);
+}
+.primary{background:var(--primary);color:white;border:0}
+.hero{
+  padding:27px;border-radius:17px;color:white;
+  background:linear-gradient(120deg,#28205e,#7668ed);
+  margin:22px 0;
+}
+.hero p{color:#e0ddff}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:13px;margin:20px 0;
+}
+.card,.stat{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-bottom:16px;
+}
+.stat strong{font-size:27px;display:block;margin-top:10px}
+.grid{
+  display:grid;grid-template-columns:1.3fr 1fr;gap:17px;
+}
+.project{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+}
+.project-icon{
+  background:#efedff;padding:12px;border-radius:10px;
+}
+.project-info{flex:1}
+.project-info strong{display:block}
+.project-info small{color:var(--muted)}
+.tag{font-size:11px;color:#6557e8}
+.section{display:none}
+.section.active{display:block}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tool{
+  background:#fff;border:1px solid var(--border);
+  padding:15px;border-radius:12px;text-align:left;
+}
+.tool:hover{border-color:var(--primary)}
+.chat{
+  background:white;border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+}
+.chat-head{padding:16px;border-bottom:1px solid var(--border)}
+.messages{
+  height:350px;overflow:auto;padding:17px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.message{
+  padding:12px 14px;border-radius:12px;
+  max-width:85%;font-size:14px;white-space:pre-wrap;
+}
+.ai{background:#efedff;align-self:flex-start}
+.user{background:var(--primary);color:white;align-self:flex-end}
+.composer{padding:13px;border-top:1px solid var(--border)}
+textarea{
+  width:100%;padding:12px;border:1px solid var(--border);
+  border-radius:9px;resize:vertical;min-height:65px;
+}
+.composer-bottom{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-top:9px;
+}
+input{
+  padding:11px;border:1px solid var(--border);
+  border-radius:8px;width:100%;
+}
+.source{padding:12px 0;border-bottom:1px solid var(--border)}
+.notice{
+  background:#fff6df;padding:13px;
+  border-radius:9px;color:#72551b;font-size:13px;
+}
+[dir="rtl"] body{text-align:right}
+[dir="rtl"] .sidebar{order:2}
+[dir="rtl"] .app{flex-direction:row}
+[dir="rtl"] .nav button{text-align:right}
+[dir="rtl"] .tool{text-align:right}
+@media(max-width:850px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .app{display:block}
+  .sidebar{width:100%;padding:14px}
+  .logo{margin-bottom:12px}
+  .nav{display:flex;overflow-x:auto}
+  .nav button{white-space:nowrap;width:auto}
+  main{padding:17px}
+  header{flex-wrap:wrap}
+  .stats{gap:8px}
+  [dir="rtl"] .app{display:block}
+}
 </style>
 </head>
 <body>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">Research <span>Atlas</span></div>
+  <nav class="nav">
+    <button class="active" onclick="showPage('dashboard',this)" data-en="⌂ Dashboard" data-ar="⌂ لوحة المعلومات">⌂ Dashboard</button>
+    <button onclick="showPage('projects',this)" data-en="▦ My Research" data-ar="▦ أبحاثي">▦ My Research</button>
+    <button onclick="showPage('chat',this)" data-en="✧ AI Chat" data-ar="✧ محادثة الذكاء الاصطناعي">✧ AI Chat</button>
+    <button onclick="showPage('sources',this)" data-en="▤ Sources" data-ar="▤ المصادر">▤ Sources</button>
+    <button onclick="showPage('tools',this)" data-en="⚒ Research Tools" data-ar="⚒ أدوات البحث">⚒ Research Tools</button>
+    <button onclick="showPage('settings',this)" data-en="⚙ Settings" data-ar="⚙ الإعدادات">⚙ Settings</button>
+  </nav>
+</aside>
+
 <main>
-<div style="color:#82b8ff;font-weight:bold">✳ ATLAS / AI RESEARCH</div>
-<h1>AI Research Agent</h1>
-<p>Research any topic using AI. Generate structured reports and discover useful insights.</p>
+<header>
+  <div>
+    <h1 id="pageTitle">Research Dashboard</h1>
+    <p id="subtitle">Your intelligent research workspace.</p>
+  </div>
+  <div>
+    <button class="btn" onclick="toggleLanguage()" id="languageButton">العربية</button>
+    <button class="btn primary" onclick="newProject()" id="newButton">+ New Project</button>
+  </div>
+</header>
 
-<div class="panel">
-<h3>What would you like to research?</h3>
-<textarea id="question" placeholder="Example: Research the future of artificial intelligence in healthcare..."></textarea>
+<!-- DASHBOARD -->
+<section id="dashboard" class="section active">
+  <div class="hero">
+    <h2 data-en="Turn questions into discoveries."
+        data-ar="حوّل الأسئلة إلى اكتشافات.">
+      Turn questions into discoveries.
+    </h2>
+    <p data-en="Explore ideas, analyse information and build evidence-based knowledge with AI."
+       data-ar="استكشف الأفكار وحلل المعلومات وابنِ معرفة مدعومة بالأدلة باستخدام الذكاء الاصطناعي.">
+      Explore ideas, analyse information and build evidence-based knowledge with AI.
+    </p>
+    <button class="btn" onclick="showPage('chat')" data-en="Start AI Chat →" data-ar="ابدأ محادثة ذكية ←">Start AI Chat →</button>
+  </div>
 
-<div class="row">
-<select id="depth">
-<option value="quick">Quick research</option>
-<option value="standard" selected>Detailed research</option>
-<option value="deep">Deep research</option>
-</select>
-<select id="format">
-<option value="report">Structured report</option>
-<option value="brief">Executive brief</option>
-<option value="bullets">Key findings</option>
-</select>
-</div>
+  <div class="stats">
+    <div class="stat"><span data-en="Projects" data-ar="المشاريع">Projects</span><strong id="projectCount">3</strong></div>
+    <div class="stat"><span data-en="Saved Sources" data-ar="المصادر المحفوظة">Saved Sources</span><strong id="sourceCount">0</strong></div>
+    <div class="stat"><span data-en="AI Messages" data-ar="رسائل الذكاء الاصطناعي">AI Messages</span><strong id="messageCount">0</strong></div>
+    <div class="stat"><span data-en="Research Reports" data-ar="التقارير البحثية">Research Reports</span><strong>5</strong></div>
+  </div>
 
-<div class="row">
-<button id="run" onclick="research()">Start AI Research ↗</button>
-<button onclick="downloadReport()">Download Report</button>
-</div>
-</div>
+  <div class="grid">
+    <div class="card">
+      <h3 data-en="Recent Research Projects" data-ar="أحدث المشاريع البحثية">Recent Research Projects</h3>
+      <div id="dashboardProjects"></div>
+    </div>
+    <div class="card">
+      <h3 data-en="Atlas AI Assistant" data-ar="مساعد أطلس الذكي">Atlas AI Assistant</h3>
+      <p data-en="Ask your research assistant anything."
+         data-ar="اسأل مساعدك البحثي عن أي موضوع.">Ask your research assistant anything.</p>
+      <div class="chat">
+        <div class="messages" id="miniMessages">
+          <div class="message ai">Hello! How can I help with your research?</div>
+        </div>
+        <div class="composer">
+          <textarea id="miniInput" placeholder="Ask a question..."></textarea>
+          <div class="composer-bottom">
+            <span class="muted">AI Assistant</span>
+            <button class="btn primary" onclick="sendMessage('miniInput','miniMessages')">Send ➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="panel">
-<h3 id="status">Research results</h3>
-<div id="output">Your research report will appear here.</div>
-</div>
+  <div class="card">
+    <h3 data-en="Research Shortcuts" data-ar="اختصارات البحث">Research Shortcuts</h3>
+    <div class="tool-grid">
+      <button class="tool" onclick="useTool('Create a research plan for: ')">🔎 Research Planner</button>
+      <button class="tool" onclick="useTool('Summarise this topic: ')">📝 Smart Summary</button>
+      <button class="tool" onclick="useTool('Compare the evidence about: ')">⚖️ Evidence Comparison</button>
+      <button class="tool" onclick="useTool('Create a research report about: ')">📚 Report Builder</button>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="section">
+  <h2 data-en="My Research Projects" data-ar="مشاريعي البحثية">My Research Projects</h2>
+  <p data-en="Organise your research in one place." data-ar="نظّم أبحاثك في مكان واحد.">Organise your research in one place.</p>
+  <div class="card">
+    <button class="btn primary" onclick="newProject()">+ New Project</button>
+    <div id="allProjects"></div>
+  </div>
+</section>
+
+<!-- CHAT -->
+<section id="chat" class="section">
+  <h2 data-en="AI Research Assistant" data-ar="مساعد البحث بالذكاء الاصطناعي">AI Research Assistant</h2>
+  <p data-en="Chat with AI in Arabic or English." data-ar="تحدث مع الذكاء الاصطناعي بالعربية أو الإنجليزية.">Chat with AI in Arabic or English.</p>
+  <div class="chat">
+    <div class="chat-head">✧ Atlas AI <span style="color:green">● Online interface</span></div>
+    <div class="messages" id="fullMessages">
+      <div class="message ai">Welcome to Research Atlas. What would you like to research?</div>
+    </div>
+    <div class="composer">
+      <textarea id="fullInput" placeholder="Ask anything..."></textarea>
+      <div class="composer-bottom">
+        <span class="muted">Research Atlas AI</span>
+        <button class="btn primary" onclick="sendMessage('fullInput','fullMessages')">Send ➤</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section id="sources" class="section">
+  <h2 data-en="Research Sources" data-ar="المصادر البحثية">Research Sources</h2>
+  <div class="card">
+    <button class="btn primary" onclick="addSource()">+ Add Source</button>
+    <div id="sourceList"></div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools" class="section">
+  <h2 data-en="AI Research Tools" data-ar="أدوات البحث الذكية">AI Research Tools</h2>
+  <div class="card">
+    <div class="tool-grid">
+      <button class="tool" onclick="useTool('Create a structured research plan for: ')">🔎 Research Planner</button>
+      <button class="tool" onclick="useTool('Summarise this research: ')">📝 Research Summariser</button>
+      <button class="tool" onclick="useTool('Compare these viewpoints: ')">⚖️ Compare Evidence</button>
+      <button class="tool" onclick="useTool('Create a professional research report about: ')">📚 Report Builder</button>
+      <button class="tool" onclick="useTool('Translate and explain this research in Arabic and English: ')">🌐 Translator</button>
+      <button class="tool" onclick="useTool('Generate research questions about: ')">💡 Research Questions</button>
+    </div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section id="settings" class="section">
+  <h2 data-en="Settings" data-ar="الإعدادات">Settings</h2>
+  <div class="card">
+    <h3 data-en="AI Configuration" data-ar="إعدادات الذكاء الاصطناعي">AI Configuration</h3>
+    <label>AI Backend Endpoint</label>
+    <input id="apiEndpoint" value="/api/chat">
+    <br><br>
+    <button class="btn primary" onclick="saveSettings()">Save Settings</button>
+    <div class="notice">
+      Never put a private API key in frontend HTML. Connect your AI model through a secure backend endpoint.
+    </div>
+  </div>
+</section>
+
 </main>
+</div>
 
 <script>
-// Replace with your NEW Groq API key.
-// WARNING: This exposes the key to anyone who can inspect this page.
-const GROQ_API_KEY = "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";
+let language = localStorage.getItem("atlasLanguage") || "en";
+let projects = JSON.parse(localStorage.getItem("atlasProjects") || "null") || [
+  "AI Adoption in the Middle East",
+  "Future of Smart Cities",
+  "Digital Economy Trends 2026"
+];
+let sources = JSON.parse(localStorage.getItem("atlasSources") || "[]");
+let messages = [];
+let messageCount = 0;
 
-async function research(){
- const question=document.getElementById("question").value.trim();
- const output=document.getElementById("output");
- const status=document.getElementById("status");
- const button=document.getElementById("run");
-
- if(!question){alert("Enter a research question.");return;}
- if(GROQ_API_KEY==="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"){
- }
-
- button.disabled=true;
- status.textContent="AI is researching...";
- output.textContent="Generating your research report. Please wait...";
-
- const depth=document.getElementById("depth").value;
- const format=document.getElementById("format").value;
-
- const prompt=`
-You are Atlas, an AI research analyst.
-
-Research question: ${question}
-
-Research depth: ${depth}
-Output format: ${format}
-
-Provide:
-1. Executive summary
-2. Background and context
-3. Key findings
-4. Detailed analysis
-5. Opportunities and risks
-6. Limitations and uncertainties
-7. Conclusion
-8. Suggested sources and further reading
-
-Be accurate. Never invent citations, URLs, statistics, or research findings.
-Clearly distinguish established facts from estimates and opinions.
-If you cannot verify something, say so.
-`;
-
- try{
-  const response=await fetch(
-   "https://api.groq.com/openai/v1/chat/completions",
-   {
-    method:"POST",
-    headers:{
-     "Content-Type":"application/json",
-     "Authorization":"Bearer "+GROQ_API_KEY
-    },
-    body:JSON.stringify({
-     model:"openai/gpt-oss-120b",
-     messages:[
-      {role:"system",content:"You are a professional AI research analyst."},
-      {role:"user",content:prompt}
-     ],
-     temperature:0.3,
-     max_tokens:4000
-    })
-   }
-  );
-
-  const data=await response.json();
-
-  if(!response.ok){
-   throw new Error(data.error?.message||"API request failed: "+response.status);
-  }
-
-  const report=data.choices?.[0]?.message?.content;
-  if(!report) throw new Error("No report returned.");
-
-  output.textContent=report;
-  status.textContent="Research complete ✓";
-
- }catch(error){
-  output.textContent="Error: "+error.message;
-  status.textContent="Research failed";
- }finally{
-  button.disabled=false;
- }
+function translate(en,ar){
+  return language === "ar" ? ar : en;
 }
 
-function downloadReport(){
- const content=document.getElementById("output").textContent;
- const blob=new Blob([content],{type:"text/plain;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download="atlas-research-report.txt";
- a.click();
- URL.revokeObjectURL(url);
+function toggleLanguage(){
+  language = language === "en" ? "ar" : "en";
+  localStorage.setItem("atlasLanguage",language);
+  document.documentElement.lang = language;
+  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+
+  document.getElementById("languageButton").textContent =
+    language === "en" ? "العربية" : "English";
+
+  document.querySelectorAll("[data-en]").forEach(el=>{
+    el.textContent = el.dataset[language];
+  });
+
+  document.querySelectorAll("textarea").forEach(el=>{
+    el.placeholder = translate("Ask a research question...","اكتب سؤالاً بحثياً...");
+  });
+
+  renderProjects();
+  renderSources();
+}
+
+function showPage(page,button){
+  document.querySelectorAll(".section").forEach(el=>{
+    el.classList.remove("active");
+  });
+  document.getElementById(page).classList.add("active");
+
+  document.querySelectorAll(".nav button").forEach(el=>{
+    el.classList.remove("active");
+  });
+  if(button) button.classList.add("active");
+
+  const titles={
+    dashboard:["Research Dashboard","لوحة المعلومات"],
+    projects:["My Research","أبحاثي"],
+    chat:["AI Research Assistant","مساعد البحث الذكي"],
+    sources:["Research Sources","المصادر البحثية"],
+    tools:["Research Tools","أدوات البحث"],
+    settings:["Settings","الإعدادات"]
+  };
+  document.getElementById("pageTitle").textContent =
+    translate(titles[page][0],titles[page][1]);
+}
+
+function newProject(){
+  const name=prompt(translate("Enter project name:","أدخل اسم المشروع:"));
+  if(!name || !name.trim()) return;
+  projects.push(name.trim());
+  localStorage.setItem("atlasProjects",JSON.stringify(projects));
+  renderProjects();
+}
+
+function renderProjects(){
+  const html=projects.map((p,i)=>`
+    <div class="project">
+      <div class="project-icon">📁</div>
+      <div class="project-info">
+        <strong>${escapeHTML(p)}</strong>
+        <small>${translate("Research project","مشروع بحثي")}</small>
+      </div>
+      <span class="tag">${translate("Active","نشط")}</span>
+    </div>
+  `).join("");
+
+  document.getElementById("dashboardProjects").innerHTML=html;
+  document.getElementById("allProjects").innerHTML=html;
+  document.getElementById("projectCount").textContent=projects.length;
+}
+
+function addSource(){
+  const value=prompt(translate("Enter source URL or title:","أدخل رابط المصدر أو عنوانه:"));
+  if(!value) return;
+  sources.push(value.trim());
+  localStorage.setItem("atlasSources",JSON.stringify(sources));
+  renderSources();
+}
+
+function renderSources(){
+  document.getElementById("sourceList").innerHTML =
+    sources.map(s=>`<div class="source">🔗 ${escapeHTML(s)}</div>`).join("") ||
+    `<p>${translate("No sources saved yet.","لا توجد مصادر محفوظة بعد.")}</p>`;
+  document.getElementById("sourceCount").textContent=sources.length;
+}
+
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function addBubble(container,role,text){
+  const bubble=document.createElement("div");
+  bubble.className="message "+role;
+  bubble.textContent=text;
+  container.appendChild(bubble);
+  container.scrollTop=container.scrollHeight;
+  return bubble;
+}
+
+async function sendMessage(inputId,containerId){
+  const input=document.getElementById(inputId);
+  const question=input.value.trim();
+  if(!question) return;
+
+  input.value="";
+  const container=document.getElementById(containerId);
+  addBubble(container,"user",question);
+  messageCount++;
+  document.getElementById("messageCount").textContent=messageCount;
+
+  const loading=addBubble(container,"ai",translate("Thinking...","جارٍ التفكير..."));
+
+  messages.push({role:"user",content:question});
+
+  try{
+    const endpoint=localStorage.getItem("atlasEndpoint") || "/api/chat";
+    const response=await fetch(endpoint,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        message:question,
+        messages:messages,
+        language:language
+      })
+    });
+
+    if(!response.ok) throw new Error("Backend error");
+
+    const data=await response.json();
+    const answer=data.reply || data.message ||
+      data.content || data.choices?.[0]?.message?.content;
+
+    if(!answer) throw new Error("Invalid response");
+
+    loading.remove();
+    addBubble(container,"ai",answer);
+    messages.push({role:"assistant",content:answer});
+
+  }catch(error){
+    loading.remove();
+    addBubble(container,"ai",
+      translate(
+        "AI backend is not connected. Please configure your secure backend endpoint in Settings.",
+        "خادم الذكاء الاصطناعي غير متصل. يرجى إعداد عنوان الخادم الآمن من الإعدادات."
+      )
+    );
+    console.error(error);
+  }
+}
+
+function useTool(promptText){
+  showPage("chat");
+  const input=document.getElementById("fullInput");
+  input.value=promptText;
+  input.focus();
+}
+
+function saveSettings(){
+  const endpoint=document.getElementById("apiEndpoint").value.trim();
+  if(!endpoint) return alert("Enter a valid endpoint.");
+  localStorage.setItem("atlasEndpoint",endpoint);
+  localStorage.setItem("atlasEndpoint",endpoint);
+  alert(translate("Settings saved.","تم حفظ الإعدادات."));
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("apiEndpoint").value =
+    localStorage.getItem("atlasEndpoint") || "/api/chat";
+  toggleLanguageInitial();
+  renderProjects();
+  renderSources();
+});
+
+function toggleLanguageInitial(){
+  document.documentElement.lang=language;
+  document.documentElement.dir=language==="ar"?"rtl":"ltr";
+  document.getElementById("languageButton").textContent =
+    language==="en"?"العربية":"English";
+  document.querySelectorAll("[data-en]").forEach(el=>{
+    el.textContent=el.dataset[language];
+  });
 }
 </script>
 </body>
