@@ -303,202 +303,81 @@ input{
 </div>
 
 <script>
-let language = localStorage.getItem("atlasLanguage") || "en";
-let projects = JSON.parse(localStorage.getItem("atlasProjects") || "null") || [
-  "AI Adoption in the Middle East",
-  "Future of Smart Cities",
-  "Digital Economy Trends 2026"
-];
-let sources = JSON.parse(localStorage.getItem("atlasSources") || "[]");
-let messages = [];
-let messageCount = 0;
 
-function translate(en,ar){
-  return language === "ar" ? ar : en;
-}
 
-function toggleLanguage(){
-  language = language === "en" ? "ar" : "en";
-  localStorage.setItem("atlasLanguage",language);
-  document.documentElement.lang = language;
-  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+  // PRIVATE LOCAL TESTING ONLY.
+  // Anyone who can access this page can inspect this API key.
+  const GROQ_API_KEY = "PASTE_YOUR_GROQ_API_KEY_HERE";
 
-  document.getElementById("languageButton").textContent =
-    language === "en" ? "العربية" : "English";
+  // Choose a model currently available in your Groq console.
+  const GROQ_MODEL = "llama-3.3-70b-versatile";
 
-  document.querySelectorAll("[data-en]").forEach(el=>{
-    el.textContent = el.dataset[language];
-  });
+  async function askGroq(message, messages = [], language = "en") {
+    if (!GROQ_API_KEY || GROQ_API_KEY.includes("PASTE_YOUR")) {
+      throw new Error("Please add your Groq API key inside index.html.");
+    }
 
-  document.querySelectorAll("textarea").forEach(el=>{
-    el.placeholder = translate("Ask a research question...","اكتب سؤالاً بحثياً...");
-  });
+    const history = Array.isArray(messages)
+      ? messages
+          .filter(m =>
+            ["user", "assistant"].includes(m.role) &&
+            typeof m.content === "string"
+          )
+          .slice(-20)
+      : [];
 
-  renderProjects();
-  renderSources();
-}
+    if (
+      !history.some(m => m.role === "user" && m.content === message)
+    ) {
+      history.push({ role: "user", content: message });
+    }
 
-function showPage(page,button){
-  document.querySelectorAll(".section").forEach(el=>{
-    el.classList.remove("active");
-  });
-  document.getElementById(page).classList.add("active");
-
-  document.querySelectorAll(".nav button").forEach(el=>{
-    el.classList.remove("active");
-  });
-  if(button) button.classList.add("active");
-
-  const titles={
-    dashboard:["Research Dashboard","لوحة المعلومات"],
-    projects:["My Research","أبحاثي"],
-    chat:["AI Research Assistant","مساعد البحث الذكي"],
-    sources:["Research Sources","المصادر البحثية"],
-    tools:["Research Tools","أدوات البحث"],
-    settings:["Settings","الإعدادات"]
-  };
-  document.getElementById("pageTitle").textContent =
-    translate(titles[page][0],titles[page][1]);
-}
-
-function newProject(){
-  const name=prompt(translate("Enter project name:","أدخل اسم المشروع:"));
-  if(!name || !name.trim()) return;
-  projects.push(name.trim());
-  localStorage.setItem("atlasProjects",JSON.stringify(projects));
-  renderProjects();
-}
-
-function renderProjects(){
-  const html=projects.map((p,i)=>`
-    <div class="project">
-      <div class="project-icon">📁</div>
-      <div class="project-info">
-        <strong>${escapeHTML(p)}</strong>
-        <small>${translate("Research project","مشروع بحثي")}</small>
-      </div>
-      <span class="tag">${translate("Active","نشط")}</span>
-    </div>
-  `).join("");
-
-  document.getElementById("dashboardProjects").innerHTML=html;
-  document.getElementById("allProjects").innerHTML=html;
-  document.getElementById("projectCount").textContent=projects.length;
-}
-
-function addSource(){
-  const value=prompt(translate("Enter source URL or title:","أدخل رابط المصدر أو عنوانه:"));
-  if(!value) return;
-  sources.push(value.trim());
-  localStorage.setItem("atlasSources",JSON.stringify(sources));
-  renderSources();
-}
-
-function renderSources(){
-  document.getElementById("sourceList").innerHTML =
-    sources.map(s=>`<div class="source">🔗 ${escapeHTML(s)}</div>`).join("") ||
-    `<p>${translate("No sources saved yet.","لا توجد مصادر محفوظة بعد.")}</p>`;
-  document.getElementById("sourceCount").textContent=sources.length;
-}
-
-function escapeHTML(value){
-  return String(value).replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
-}
-
-function addBubble(container,role,text){
-  const bubble=document.createElement("div");
-  bubble.className="message "+role;
-  bubble.textContent=text;
-  container.appendChild(bubble);
-  container.scrollTop=container.scrollHeight;
-  return bubble;
-}
-
-async function sendMessage(inputId,containerId){
-  const input=document.getElementById(inputId);
-  const question=input.value.trim();
-  if(!question) return;
-
-  input.value="";
-  const container=document.getElementById(containerId);
-  addBubble(container,"user",question);
-  messageCount++;
-  document.getElementById("messageCount").textContent=messageCount;
-
-  const loading=addBubble(container,"ai",translate("Thinking...","جارٍ التفكير..."));
-
-  messages.push({role:"user",content:question});
-
-  try{
-    const endpoint=localStorage.getItem("atlasEndpoint") || "/api/chat";
-    const response=await fetch(endpoint,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        message:question,
-        messages:messages,
-        language:language
-      })
-    });
-
-    if(!response.ok) throw new Error("Backend error");
-
-    const data=await response.json();
-    const answer=data.reply || data.message ||
-      data.content || data.choices?.[0]?.message?.content;
-
-    if(!answer) throw new Error("Invalid response");
-
-    loading.remove();
-    addBubble(container,"ai",answer);
-    messages.push({role:"assistant",content:answer});
-
-  }catch(error){
-    loading.remove();
-    addBubble(container,"ai",
-      translate(
-        "AI backend is not connected. Please configure your secure backend endpoint in Settings.",
-        "خادم الذكاء الاصطناعي غير متصل. يرجى إعداد عنوان الخادم الآمن من الإعدادات."
-      )
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Research Atlas, an intelligent research assistant. " +
+                "Help with research, explanations, summaries, and organizing ideas. " +
+                "Do not invent facts or citations. Reply in " +
+                (language === "ar" ? "Arabic" : "English") +
+                " unless the user requests another language."
+            },
+            ...history
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      }
     );
-    console.error(error);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error?.message || "Groq API request failed: " + response.status
+      );
+    }
+
+    const reply = data.choices?.[0]?.message?.content;
+
+    if (!reply) {
+      throw new Error("Groq returned an empty response.");
+    }
+
+    return reply;
   }
-}
 
-function useTool(promptText){
-  showPage("chat");
-  const input=document.getElementById("fullInput");
-  input.value=promptText;
-  input.focus();
-}
 
-function saveSettings(){
-  const endpoint=document.getElementById("apiEndpoint").value.trim();
-  if(!endpoint) return alert("Enter a valid endpoint.");
-  localStorage.setItem("atlasEndpoint",endpoint);
-  localStorage.setItem("atlasEndpoint",endpoint);
-  alert(translate("Settings saved.","تم حفظ الإعدادات."));
-}
-
-document.addEventListener("DOMContentLoaded",()=>{
-  document.getElementById("apiEndpoint").value =
-    localStorage.getItem("atlasEndpoint") || "/api/chat";
-  toggleLanguageInitial();
-  renderProjects();
-  renderSources();
-});
-
-function toggleLanguageInitial(){
-  document.documentElement.lang=language;
-  document.documentElement.dir=language==="ar"?"rtl":"ltr";
-  document.getElementById("languageButton").textContent =
-    language==="en"?"العربية":"English";
-  document.querySelectorAll("[data-en]").forEach(el=>{
-    el.textContent=el.dataset[language];
-  });
-}
 </script>
 </body>
 </html>
